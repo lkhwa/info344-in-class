@@ -5,8 +5,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
+	"strings"
+
+	"github.com/info344-a17/info344-in-class/zipsvr/handlers"
+	"github.com/info344-a17/info344-in-class/zipsvr/models"
 )
+
+const zipsPath = "/zips/"
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	//Using pointers are efficient, can see changes on other side
@@ -29,6 +36,24 @@ func memoryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	addr := os.Getenv("ADDR")
+	if len(addr) == 0 {
+		addr = ":80"
+	}
+	zips, err := models.LoadZips("zips.csv")
+	if err != nil {
+		log.Fatal("error loading zips: %v", err)
+	}
+	log.Printf("loaded %d zips", len(zips))
+
+	//TASK: return to retrieve all city=Seattle zip codes
+	//HOW: use a map, getting constant-time access to a value, given a key
+	cityIndex := models.ZipIndex{} //{} creates a static instance of the map
+	for _, z := range zips {       // right side is something that's iterable, such as a slice; left side: index, ref to item
+		cityLower := strings.ToLower(z.City) //convert to lowercase, using strings pkg and ToLower func in the pkg
+		cityIndex[cityLower] = append(cityIndex[cityLower], z)
+	}
+
 	//fmt.Println("Hello World!")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", helloHandler)
@@ -38,6 +63,12 @@ func main() {
 	//Putting a / at the end of the resource path allows the user to specify a unique identifier.
 	//So if the requested resource path starts with the parameter, you can then look at what the last unique bit is.
 
-	fmt.Printf("server is listening at http://localhost:4000\n")
-	log.Fatal(http.ListenAndServe("localhost:4000", mux))
+	cityHandler := &handlers.CityHandler{
+		Index:      cityIndex,
+		PathPrefix: zipsPath,
+	}
+	mux.Handle(zipsPath, cityHandler)
+
+	fmt.Printf("server is listening at http://%s\n", addr)
+	log.Fatal(http.ListenAndServe(addr, mux))
 }
