@@ -80,11 +80,6 @@ func TestParseSize(t *testing.T) {
 			input:          "",
 			expectedOutput: &Size{},
 		},
-		{
-			name:           "normal",
-			input:          "10x10",
-			expectedOutput: &Size{},
-		},
 	}
 	for _, c := range cases {
 		if output := ParseSize(c.input); output.Height != c.expectedOutput.Height || output.Width != c.expectedOutput.Width {
