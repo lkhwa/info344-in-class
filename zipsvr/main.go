@@ -40,6 +40,12 @@ func main() {
 	if len(addr) == 0 {
 		addr = ":80"
 	}
+
+	tlskey := os.Getenv("TLSKEY")
+	tlscert := os.Getenv("TLSCERT")
+	if len(tlskey) == 0 || len(tlscert) == 0 {
+		log.Fatal("please set TLSKEY and TLSCERT")
+	}
 	zips, err := models.LoadZips("zips.csv")
 	if err != nil {
 		log.Fatal("error loading zips: %v", err)
@@ -70,5 +76,5 @@ func main() {
 	mux.Handle(zipsPath, cityHandler)
 
 	fmt.Printf("server is listening at http://%s\n", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	log.Fatal(http.ListenAndServeTLS(addr, tlscert, tlskey, mux))
 }
