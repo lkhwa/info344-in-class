@@ -67,6 +67,11 @@ func TestGetGreeting(t *testing.T) {
 		}
 	}
 
+	for _, c := range cases {
+		if output := GetGreeting(c.input); output != c.expectedOutput {
+			t.Errorf("%s: got %s but expected %s", c.name, output, c.expectedOutput)
+		}
+	}
 }
 
 func TestParseSize(t *testing.T) {
@@ -80,13 +85,23 @@ func TestParseSize(t *testing.T) {
 			input:          "",
 			expectedOutput: &Size{},
 		},
+		{
+			name:           "valid",
+			input:          "10x20",
+			expectedOutput: &Size{10, 20},
+		},
+		{
+			name:           "invalid height",
+			input:          "10xfoo",
+			expectedOutput: &Size{10, 0},
+		},
 	}
+
 	for _, c := range cases {
 		if output := ParseSize(c.input); output.Height != c.expectedOutput.Height || output.Width != c.expectedOutput.Width {
 			t.Errorf("%s: got %v but expected %v", c.name, output, c.expectedOutput)
 		}
 	}
-
 }
 
 func TestLateDaysConsume(t *testing.T) {
@@ -97,7 +112,7 @@ func TestLateDaysConsume(t *testing.T) {
 			expectedOutput = 0
 		}
 		if output := ld.Consume("test"); output != expectedOutput {
-			t.Errorf("iteration %d: got %d, but expected %d", i, output, expectedOutput)
+			t.Errorf("iteration %d: got %d but expected %d", i, output, expectedOutput)
 		}
 	}
 }

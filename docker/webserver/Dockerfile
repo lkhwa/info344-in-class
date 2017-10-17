@@ -1,5 +1,6 @@
 # TODO: complete for go web server container image
 FROM scratch
-ADD webserver webserver
-EXPOSE 90
+#COPY executable file
+COPY webserver webserver
+EXPOSE 80
 ENTRYPOINT ["/webserver"]
